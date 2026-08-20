@@ -1,11 +1,11 @@
 # RoomLoop Booking Service — Spec
 
-Status: DRAFT — for review
+Status: Approved
 Source: `RoomLoop-Take-Home-Brief.pdf` (Junior SDE, Round 2)
 
 This document defines **what** the service must do and the business rules it must enforce.
 It intentionally excludes implementation details (language frameworks, storage engine, file
-layout) — those live in `architecture.md`. Non-technical framing lives in `hld.md`.
+layout) — those live in `../architecture.md`. Non-technical framing lives in `hld.md`.
 
 ---
 

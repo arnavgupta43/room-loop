@@ -1,8 +1,9 @@
 # RoomLoop — What, Why, How
 
-Status: DRAFT — for review
+Status: Approved
 Audience: anyone, not just engineers. No code or technical jargon below — for the technical
-version of these decisions, see `spec.md`; for the technical build plan, see `architecture.md`.
+version of these decisions, see `spec.md`; for the technical build plan, see
+`../architecture.md`.
 
 ---
 
