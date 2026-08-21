@@ -48,6 +48,15 @@ def add_booking(booking: Booking) -> Booking:
     return booking
 
 
+def add_bookings_batch(new_bookings: list[Booking]) -> list[Booking]:
+    global next_booking_id
+    for booking in new_bookings:
+        booking.id = next_booking_id
+        next_booking_id += 1
+        bookings[booking.id] = booking
+    return new_bookings
+
+
 def get_booking(booking_id: int) -> Optional[Booking]:
     return bookings.get(booking_id)
 

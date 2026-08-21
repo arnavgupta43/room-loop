@@ -7,7 +7,7 @@ is rejected (G1), via time_utils.parse_naive_iso in a shared before-validator.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -23,18 +23,28 @@ class RoomOut(BaseModel):
     capacity: int
 
 
-class BookingCreate(BaseModel):
-    room_id: int
-    start: datetime
-    end: datetime
-    user: str
-
-    @field_validator("start", "end", mode="before")
+class _NaiveTimestampMixin(BaseModel):
+    @field_validator("start", "end", mode="before", check_fields=False)
     @classmethod
     def _reject_aware_datetimes(cls, value):
         if isinstance(value, str):
             return parse_naive_iso(value)
         return value
+
+
+class BookingCreate(_NaiveTimestampMixin):
+    room_id: int
+    start: datetime
+    end: datetime
+    user: str
+
+
+class RecurringBookingCreate(_NaiveTimestampMixin):
+    room_id: int
+    start: datetime
+    end: datetime
+    user: str
+    repeat_until: date
 
 
 class BookingOut(BaseModel):
@@ -47,6 +57,21 @@ class BookingOut(BaseModel):
     user: str
     status: str
     series_id: Optional[str] = None
+
+
+class SkippedInstance(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    start: datetime
+    end: datetime
+    reason: str
+    conflicting_booking_id: int
+
+
+class RecurringBookingResult(BaseModel):
+    series_id: str
+    created: list[BookingOut]
+    skipped: list[SkippedInstance]
 
 
 class ErrorResponse(BaseModel):

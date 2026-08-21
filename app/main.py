@@ -14,7 +14,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app import domain, store
-from app.schemas import BookingCreate, BookingOut, RoomOut
+from app.schemas import BookingCreate, BookingOut, RecurringBookingCreate, RecurringBookingResult, RoomOut
 from app.time_utils import format_naive_iso
 
 app = FastAPI(title="RoomLoop")
@@ -52,6 +52,18 @@ async def _booking_not_found(request: Request, exc: domain.BookingNotFound) -> J
     return JSONResponse(status_code=404, content={"error": "booking_not_found", "message": str(exc)})
 
 
+@app.exception_handler(domain.RangeTooLarge)
+async def _range_too_large(request: Request, exc: domain.RangeTooLarge) -> JSONResponse:
+    return JSONResponse(status_code=400, content={"error": "range_too_large", "message": str(exc)})
+
+
+@app.exception_handler(domain.AllInstancesConflicted)
+async def _all_instances_conflicted(request: Request, exc: domain.AllInstancesConflicted) -> JSONResponse:
+    return JSONResponse(
+        status_code=409, content={"error": "all_instances_conflicted", "message": str(exc)}
+    )
+
+
 @app.get("/rooms", response_model=list[RoomOut])
 def get_rooms() -> list[domain.Room]:
     return store.list_rooms()
@@ -77,6 +89,25 @@ def create_booking(payload: BookingCreate) -> domain.Booking:
         user=payload.user,
     )
     return store.add_booking(booking)
+
+
+@app.post("/bookings/recurring", response_model=RecurringBookingResult, status_code=201)
+def create_recurring_booking(payload: RecurringBookingCreate) -> dict:
+    room = store.get_room(payload.room_id)
+    if room is None:
+        raise domain.RoomNotFound(f"room {payload.room_id} not found")
+
+    existing = store.list_bookings(room_id=payload.room_id, status="active")
+    series_id, created, skipped = domain.create_recurring_booking(
+        room_id=payload.room_id,
+        start=payload.start,
+        end=payload.end,
+        user=payload.user,
+        repeat_until=payload.repeat_until,
+        existing_bookings=existing,
+    )
+    persisted = store.add_bookings_batch(created)
+    return {"series_id": series_id, "created": persisted, "skipped": skipped}
 
 
 @app.get("/bookings", response_model=list[BookingOut])
