@@ -9,6 +9,7 @@ at the API level instead, in test_api_bookings.py.
 from datetime import datetime, timedelta
 
 from app.domain import conflicts
+from test_data.scenarios import back_to_back_pair, overlapping_pair
 
 BASE = datetime(2026, 7, 6, 9, 0, 0)
 
@@ -18,11 +19,10 @@ def test_identical_ranges_conflict():
     assert conflicts(start, end, start, end)
 
 
-def test_partial_overlap_conflicts_both_directions():
-    a_start, a_end = BASE, BASE + timedelta(minutes=30)
-    b_start, b_end = BASE + timedelta(minutes=15), BASE + timedelta(minutes=45)
-    assert conflicts(a_start, a_end, b_start, b_end)
-    assert conflicts(b_start, b_end, a_start, a_end)
+def test_overlapping_pair_conflicts_both_directions():
+    existing, new = overlapping_pair()
+    assert conflicts(*existing, *new)
+    assert conflicts(*new, *existing)
 
 
 def test_one_range_fully_contains_the_other_conflicts():
@@ -31,16 +31,10 @@ def test_one_range_fully_contains_the_other_conflicts():
     assert conflicts(outer_start, outer_end, inner_start, inner_end)
 
 
-def test_back_to_back_existing_ends_when_new_starts_is_not_a_conflict():
-    existing_start, existing_end = BASE, BASE + timedelta(hours=1)
-    new_start, new_end = existing_end, existing_end + timedelta(hours=1)
-    assert not conflicts(existing_start, existing_end, new_start, new_end)
-
-
-def test_back_to_back_new_ends_when_existing_starts_is_not_a_conflict():
-    new_start, new_end = BASE, BASE + timedelta(hours=1)
-    existing_start, existing_end = new_end, new_end + timedelta(hours=1)
-    assert not conflicts(new_start, new_end, existing_start, existing_end)
+def test_back_to_back_pair_is_not_a_conflict_either_direction():
+    existing, new = back_to_back_pair()
+    assert not conflicts(*existing, *new)
+    assert not conflicts(*new, *existing)
 
 
 def test_smallest_possible_overlap_conflicts():

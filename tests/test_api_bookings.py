@@ -3,6 +3,8 @@ API-level tests for POST /bookings, GET /bookings, GET /bookings/{id}, DELETE /b
 architecture.md SS3.
 """
 
+from test_data.scenarios import overlapping_pair
+
 
 def _booking_payload(room_id=3, start="2026-07-06T09:00:00", end="2026-07-06T09:30:00", user="priya"):
     return {"room_id": room_id, "start": start, "end": end, "user": user}
@@ -51,10 +53,14 @@ def test_create_booking_disallowed_duration_returns_400(client):
 
 
 def test_create_booking_conflict_returns_409_with_conflicting_id(client):
-    first = client.post("/bookings", json=_booking_payload()).json()
+    (existing_start, existing_end), (new_start, new_end) = overlapping_pair()
+    first = client.post(
+        "/bookings",
+        json=_booking_payload(start=existing_start.isoformat(), end=existing_end.isoformat()),
+    ).json()
     response = client.post(
         "/bookings",
-        json=_booking_payload(start="2026-07-06T09:15:00", end="2026-07-06T09:45:00", user="sam"),
+        json=_booking_payload(start=new_start.isoformat(), end=new_end.isoformat(), user="sam"),
     )
     assert response.status_code == 409
     body = response.json()
