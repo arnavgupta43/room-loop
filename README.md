@@ -83,7 +83,7 @@ Full contract (request/response shapes, error codes) is in [`architecture.md`](a
 python -m venv .venv
 .venv/Scripts/activate        # .venv/bin/activate on macOS/Linux
 pip install -r requirements.txt
-pytest                        # 81 tests, all passing
+pytest                        # 80 tests, all passing
 uvicorn app.main:app --reload # run the service locally at http://127.0.0.1:8000
 ```
 
@@ -91,5 +91,5 @@ uvicorn app.main:app --reload # run the service locally at http://127.0.0.1:8000
 
 - [x] Code — all endpoints in `architecture.md` §3 implemented and tested
 - [x] README with run instructions
-- [ ] Test data demonstrating highest-risk behavior (see `docs/spec.md` §5 for what that is)
-- [ ] `DECISIONS.md`
+- [x] Test data demonstrating highest-risk behavior (see `docs/spec.md` §5 and `test_data/scenarios.py`)
+- [x] [`DECISIONS.md`](DECISIONS.md)
