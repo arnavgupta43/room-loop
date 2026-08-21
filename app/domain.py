@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Optional
 
+from app import time_utils
+
 ALLOWED_DURATIONS: frozenset[timedelta] = frozenset(
     {
         timedelta(minutes=15),
@@ -176,3 +178,12 @@ def create_recurring_booking(
         raise AllInstancesConflicted("every instance of the recurring booking conflicted")
 
     return series_id, created, skipped
+
+
+def future_cutoff_for_room(room: Room, now: Optional[datetime] = None) -> datetime:
+    """"Now" for series cancellation is the room's own office wall-clock time (G6), never the
+    server's local time. `now` can be supplied directly (used by tests); otherwise it's read
+    from time_utils.now_in_office(room.office)."""
+    if now is not None:
+        return now
+    return time_utils.now_in_office(room.office)

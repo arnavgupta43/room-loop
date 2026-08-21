@@ -87,3 +87,19 @@ def cancel_booking(booking_id: int, cancelled_at: datetime) -> Optional[Booking]
         booking.status = "cancelled"
         booking.cancelled_at = cancelled_at
     return booking
+
+
+def cancel_series_future(series_id: str, cutoff: datetime) -> Optional[tuple[int, int]]:
+    series_bookings = [b for b in bookings.values() if b.series_id == series_id]
+    if not series_bookings:
+        return None
+
+    cancelled_count = 0
+    for booking in series_bookings:
+        if booking.status == "active" and booking.start >= cutoff:
+            booking.status = "cancelled"
+            booking.cancelled_at = cutoff
+            cancelled_count += 1
+
+    left_untouched_count = len(series_bookings) - cancelled_count
+    return cancelled_count, left_untouched_count

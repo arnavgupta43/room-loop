@@ -74,6 +74,12 @@ class RecurringBookingResult(BaseModel):
     skipped: list[SkippedInstance]
 
 
+class SeriesCancelResult(BaseModel):
+    series_id: str
+    cancelled_count: int
+    left_untouched_count: int
+
+
 class ErrorResponse(BaseModel):
     error: str
     message: str

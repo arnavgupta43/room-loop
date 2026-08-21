@@ -14,7 +14,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app import domain, store
-from app.schemas import BookingCreate, BookingOut, RecurringBookingCreate, RecurringBookingResult, RoomOut
+from app.schemas import (
+    BookingCreate,
+    BookingOut,
+    RecurringBookingCreate,
+    RecurringBookingResult,
+    RoomOut,
+    SeriesCancelResult,
+)
 from app.time_utils import format_naive_iso
 
 app = FastAPI(title="RoomLoop")
@@ -62,6 +69,11 @@ async def _all_instances_conflicted(request: Request, exc: domain.AllInstancesCo
     return JSONResponse(
         status_code=409, content={"error": "all_instances_conflicted", "message": str(exc)}
     )
+
+
+@app.exception_handler(domain.SeriesNotFound)
+async def _series_not_found(request: Request, exc: domain.SeriesNotFound) -> JSONResponse:
+    return JSONResponse(status_code=404, content={"error": "series_not_found", "message": str(exc)})
 
 
 @app.get("/rooms", response_model=list[RoomOut])
@@ -139,4 +151,24 @@ def cancel_booking(booking_id: int) -> dict:
         "id": cancelled.id,
         "status": cancelled.status,
         "cancelled_at": format_naive_iso(cancelled.cancelled_at),
+    }
+
+
+@app.delete("/bookings/series/{series_id}", response_model=SeriesCancelResult)
+def cancel_series(series_id: str) -> dict:
+    series_bookings = store.list_bookings(series_id=series_id)
+    if not series_bookings:
+        raise domain.SeriesNotFound(f"series {series_id} not found")
+
+    room = store.get_room(series_bookings[0].room_id)
+    assert room is not None
+    cutoff = domain.future_cutoff_for_room(room)
+
+    result = store.cancel_series_future(series_id, cutoff)
+    assert result is not None
+    cancelled_count, left_untouched_count = result
+    return {
+        "series_id": series_id,
+        "cancelled_count": cancelled_count,
+        "left_untouched_count": left_untouched_count,
     }
