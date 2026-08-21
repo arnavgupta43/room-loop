@@ -26,13 +26,13 @@ Only after those three were settled did implementation start — test-first, aga
 
 ## Project status
 
-Planning docs are done and approved. A first vertical slice is implemented and tested: room
-listing, and single-booking create/read/list/cancel, including duration validation and conflict
-detection (`domain.validate_duration`, `domain.conflicts`). 42 tests passing.
+Planning docs are done and approved. All functionality in `architecture.md` §3 is implemented:
+room listing, single and recurring bookings, single- and series-level cancellation, and the
+availability-search endpoint. 81 tests passing.
 
-Not yet built: recurring (weekly) bookings, series cancellation, and the availability-search
-endpoint — the pieces that need `time_utils.now_in_office` and DST handling. Every still-stubbed
-file/function keeps its docstring describing what's planned, per `spec.md`/`architecture.md`.
+Remaining before this is "done": `test_data/scenarios.py` (the brief's requested test data
+demonstrating highest-risk behavior, as reusable fixtures rather than only inline test
+assertions) and `DECISIONS.md`.
 
 ## Repo layout (current)
 
@@ -43,7 +43,7 @@ app/
   domain.py          pure business logic — no FastAPI/Pydantic dependency
   store.py           in-memory repository
   rooms_seed.py      fixed room data (from C2) + internal office field
-  time_utils.py      naive-ISO parsing (per-office "now" helper not yet implemented)
+  time_utils.py      naive-ISO parsing + the one per-office "now" helper
 tests/
   conftest.py
   test_domain_*.py   unit tests against domain.py directly, no HTTP
@@ -58,24 +58,24 @@ requirements.txt
 pytest.ini
 ```
 
-Every file above already exists with a docstring explaining its contents (implemented parts say
-so; unbuilt parts describe what's planned) — open any of them to see what's there.
+Every file above already exists with a docstring explaining its contents — open any of them to
+see what's there.
 
-## Endpoints implemented so far
+## Endpoints
 
-Full planned contract (request/response shapes, error codes) is in
-[`architecture.md`](architecture.md) §3. What's actually live right now:
+Full contract (request/response shapes, error codes) is in [`architecture.md`](architecture.md)
+§3.
 
-| Method | Path                  | Notes                                              |
-|--------|-----------------------|-----------------------------------------------------|
-| GET    | `/rooms`               | fixed 4-room list, exact C2 shape                  |
-| POST   | `/bookings`             | single booking; duration + conflict validated      |
-| GET    | `/bookings`             | filter by `room_id`, `user`, `series_id`, `status` |
-| GET    | `/bookings/{id}`        | 404 if unknown                                      |
-| DELETE | `/bookings/{id}`        | cancel, idempotent                                  |
-
-Not yet implemented: `POST /bookings/recurring`, `DELETE /bookings/series/{series_id}`,
-`GET /availability`.
+| Method | Path                          | Notes                                              |
+|--------|-------------------------------|-----------------------------------------------------|
+| GET    | `/rooms`                      | fixed 4-room list, exact C2 shape                  |
+| POST   | `/bookings`                   | single booking; duration + conflict validated      |
+| POST   | `/bookings/recurring`         | weekly series; per-instance conflict skip (R1+R2)  |
+| GET    | `/bookings`                   | filter by `room_id`, `user`, `series_id`, `status` |
+| GET    | `/bookings/{id}`               | 404 if unknown                                     |
+| DELETE | `/bookings/{id}`               | cancel one booking/instance, idempotent            |
+| DELETE | `/bookings/series/{series_id}` | cancel future instances of a series (§3.4)         |
+| GET    | `/availability`                | rank candidate rooms for a time window (§3.8)      |
 
 ## Running it
 
@@ -83,13 +83,13 @@ Not yet implemented: `POST /bookings/recurring`, `DELETE /bookings/series/{serie
 python -m venv .venv
 .venv/Scripts/activate        # .venv/bin/activate on macOS/Linux
 pip install -r requirements.txt
-pytest                        # 42 tests, all passing
+pytest                        # 81 tests, all passing
 uvicorn app.main:app --reload # run the service locally at http://127.0.0.1:8000
 ```
 
 ## Deliverables checklist (per the brief)
 
-- [ ] Code — in progress (single bookings done; recurring/cancellation/availability pending)
+- [x] Code — all endpoints in `architecture.md` §3 implemented and tested
 - [x] README with run instructions
 - [ ] Test data demonstrating highest-risk behavior (see `docs/spec.md` §5 for what that is)
 - [ ] `DECISIONS.md`
