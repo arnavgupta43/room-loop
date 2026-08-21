@@ -29,8 +29,6 @@ def format_naive_iso(dt: datetime) -> str:
 
 
 def now_in_office(office: str) -> datetime:
-    """The only place in this codebase allowed to touch zoneinfo/timezone-aware datetimes
-    internally (G1, G6): gets the real current instant, localizes it to the room's office, then
-    strips tzinfo before returning - so the aware datetime never escapes this function."""
+    """The only place allowed to touch zoneinfo (G1, G6) - strips tzinfo before returning."""
     aware_now = datetime.now(_OFFICE_ZONES[office])
     return aware_now.replace(tzinfo=None)

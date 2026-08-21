@@ -1,9 +1,6 @@
 """
-Unit tests for domain.conflicts - spec.md SS3.5/R4, risk item SS5.2.
-
-domain.conflicts is a pure time-range overlap test; it has no notion of room or status
-(same-room and active-only filtering happens in the caller, G5). Those two cases are covered
-at the API level instead, in test_api_bookings.py.
+Unit tests for domain.conflicts - spec.md SS3.5/R4, risk item SS5.2. domain.conflicts has no
+notion of room or status (G5) - those cases are covered in test_api_bookings.py instead.
 """
 
 from datetime import datetime, timedelta

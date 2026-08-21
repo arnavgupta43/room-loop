@@ -1,7 +1,6 @@
 """
-Fixed room data. Rooms are not created via the API (spec.md SS7) - this is the one source of
-truth store.py seeds itself from at startup. IDs are deliberately non-contiguous (3, 4, 9, 17),
-matching the real dashboard data (C2) - never backfill or renumber these.
+Fixed room data (not created via the API, spec.md SS7). IDs are deliberately non-contiguous,
+matching real dashboard data (C2) - never renumber.
 """
 
 from app.domain import Room

@@ -1,7 +1,6 @@
 """
-API-level tests for POST /bookings/recurring - spec.md SS3.6 (R1+R2 resolution), risk item
-SS5.3. This is where the R1-vs-R2 resolution gets proven end to end, not just at the domain
-layer.
+API-level tests for POST /bookings/recurring - spec.md SS3.6 (R1+R2), proven end to end here,
+not just at the domain layer.
 """
 
 

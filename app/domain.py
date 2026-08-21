@@ -1,7 +1,5 @@
 """
-Pure business logic - no FastAPI, no Pydantic, no I/O. Everything here operates on plain
-Python values (datetimes, dataclasses) so it can be unit-tested directly, before any HTTP layer
-exists.
+Pure business logic - no FastAPI, no Pydantic, no I/O - so it can be unit-tested directly.
 """
 
 from __future__ import annotations
@@ -28,8 +26,7 @@ ALLOWED_DURATIONS: frozenset[timedelta] = frozenset(
     }
 )
 
-# G9 - sanity limit on recurring-series length (~5 years weekly), so a pathological
-# repeat_until can't generate an unbounded instance list.
+# G9 - caps series length so a pathological repeat_until can't run unbounded.
 MAX_RECURRING_INSTANCES = 260
 
 
@@ -118,9 +115,7 @@ def conflicts(a_start: datetime, a_end: datetime, b_start: datetime, b_end: date
 def generate_weekly_instances(
     start: datetime, end: datetime, repeat_until: date
 ) -> list[tuple[datetime, datetime]]:
-    """Each next instance is the previous naive start/end plus exactly 7 calendar days (G3) -
-    plain timedelta arithmetic on naive values, no timezone involvement, which is what makes it
-    DST-proof by construction."""
+    """DST-proof by construction (G3): each instance is naive start/end + exactly 7 days."""
     if repeat_until < start.date():
         raise InvalidTimeRange("repeat_until is before the series start date")
 
@@ -145,11 +140,8 @@ def create_recurring_booking(
     repeat_until: date,
     existing_bookings: list[Booking],
 ) -> tuple[str, list[Booking], list[SkippedInstance]]:
-    """Orchestrates recurring creation (SS3.6/R1+R2): validate duration once (G4), generate
-    instances up front, check each against existing_bookings independently, and partition into
-    created/skipped. Callers are responsible for the room lookup and for persisting `created`
-    (this function does no I/O) - so any exception raised here happens before any write, per G7.
-    """
+    """Orchestrates recurring creation (R1+R2): partitions instances into created/skipped.
+    Does no I/O - callers persist `created`, so failures here always precede any write (G7)."""
     validate_duration(start, end)
     instances = generate_weekly_instances(start, end, repeat_until)
 
@@ -190,9 +182,7 @@ def create_recurring_booking(
 
 
 def future_cutoff_for_room(room: Room, now: Optional[datetime] = None) -> datetime:
-    """"Now" for series cancellation is the room's own office wall-clock time (G6), never the
-    server's local time. `now` can be supplied directly (used by tests); otherwise it's read
-    from time_utils.now_in_office(room.office)."""
+    """"Now" is the room's own office wall-clock time (G6), never the server's local time."""
     if now is not None:
         return now
     return time_utils.now_in_office(room.office)
@@ -206,8 +196,7 @@ def rank_available_rooms(
     existing_bookings_by_room: dict[int, list[Booking]],
     repeat_until: Optional[date] = None,
 ) -> list[AvailableRoom]:
-    """A dry run of booking creation (SS3.8): same duration validation, same series expansion,
-    same conflict rule - just scored across every candidate room instead of written for one."""
+    """A dry run of booking creation (SS3.8) - same validation, expansion, and conflict rule."""
     validate_duration(start, end)
     query_instances = (
         generate_weekly_instances(start, end, repeat_until) if repeat_until is not None else [(start, end)]

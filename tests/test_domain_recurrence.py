@@ -1,7 +1,6 @@
 """
 Unit tests for domain.generate_weekly_instances - spec.md SS3.3/SS3.7, risk item SS5.1.
-This is the single highest-priority test file in the project: it directly targets the Denver
-DST bug described by the Office Manager.
+Highest-priority test file in the project: targets the Denver DST bug directly.
 """
 
 from datetime import date, datetime, time, timedelta
@@ -24,8 +23,7 @@ from test_data.scenarios import (
 
 
 def _series_spanning(transition_date, weeks_before=2, weeks_after=2):
-    """A weekly series starting `weeks_before` the given date and running `weeks_after` past it,
-    so the generated instances straddle the transition instead of merely approaching it."""
+    """A weekly series straddling `transition_date`, not just approaching it."""
     start_date = transition_date - timedelta(weeks=weeks_before)
     weeks = weeks_before + weeks_after + 1
     built = weekly_series_spanning(start_date, weeks, time(9, 0), room_id=3, user="priya")
