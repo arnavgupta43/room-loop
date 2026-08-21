@@ -27,9 +27,9 @@ class _NaiveTimestampMixin(BaseModel):
     @field_validator("start", "end", mode="before", check_fields=False)
     @classmethod
     def _reject_aware_datetimes(cls, value):
-        if isinstance(value, str):
-            return parse_naive_iso(value)
-        return value
+        if not isinstance(value, str):
+            raise ValueError(f"timestamp must be an ISO string, not {type(value).__name__}")
+        return parse_naive_iso(value)
 
 
 class BookingCreate(_NaiveTimestampMixin):

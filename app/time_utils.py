@@ -20,6 +20,8 @@ def parse_naive_iso(value: str) -> datetime:
         raise ValueError(f"invalid ISO datetime: {value!r}") from exc
     if dt.tzinfo is not None:
         raise ValueError(f"datetime must be naive, no timezone/offset allowed: {value!r}")
+    if dt.microsecond != 0:
+        raise ValueError(f"datetime must have second precision, no fractional seconds: {value!r}")
     return dt
 
 

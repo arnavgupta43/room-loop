@@ -46,6 +46,23 @@ def test_create_booking_rejects_offset_or_z_suffixed_timestamps(client):
     assert response.json()["error"] == "invalid_request"
 
 
+def test_create_booking_rejects_numeric_epoch_timestamps(client):
+    response = client.post(
+        "/bookings", json=_booking_payload(start=1732000000, end=1732001800)
+    )
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_request"
+
+
+def test_create_booking_rejects_fractional_seconds(client):
+    response = client.post(
+        "/bookings",
+        json=_booking_payload(start="2026-07-06T09:00:00.123456", end="2026-07-06T09:30:00.123456"),
+    )
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_request"
+
+
 def test_create_booking_disallowed_duration_returns_400(client):
     response = client.post("/bookings", json=_booking_payload(end="2026-07-06T09:20:00"))
     assert response.status_code == 400
