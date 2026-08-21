@@ -12,8 +12,7 @@ reasoning, not just the result:
 
 1. **[`docs/spec.md`](docs/spec.md)** — the brief's requirements restated precisely, plus every
    place the brief was ambiguous or self-contradictory, made explicit with a resolution and a
-   reason. (There are three real contradictions in the brief itself — worth reading §3.6 and §4
-   in particular.)
+   reason. (There are two real contradictions in the brief itself — see §3.6 and §4.)
 2. **[`docs/hld.md`](docs/hld.md)** — the same decisions in plain language, no jargon, aimed at
    a non-technical reader (what this does, why it's built this way, how it behaves).
 3. **[`architecture.md`](architecture.md)** — how `spec.md` turns into code: tech stack choice,
@@ -23,7 +22,6 @@ reasoning, not just the result:
 
 Only after those three were settled did implementation start — test-first, against the contract
 `architecture.md` already pinned down, not written ad hoc alongside the code.
-
 
 ## Repo layout (current)
 
@@ -45,12 +43,13 @@ docs/
   spec.md            requirements + resolved ambiguities (technical)
   hld.md             what/why/how (plain language)
 architecture.md       tech stack, API contract, guardrails
+DECISIONS.md           judgment calls, PM questions, where AI helped, what's left out
 requirements.txt
 pytest.ini
 ```
 
-Every file above already exists with a docstring explaining its contents — open any of them to
-see what's there.
+Every module in `app/` and `tests/` carries a docstring explaining its contents — open any of
+them to see what's there.
 
 ## Endpoints
 
