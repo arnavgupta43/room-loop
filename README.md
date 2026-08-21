@@ -24,15 +24,6 @@ reasoning, not just the result:
 Only after those three were settled did implementation start — test-first, against the contract
 `architecture.md` already pinned down, not written ad hoc alongside the code.
 
-## Project status
-
-Planning docs are done and approved. All functionality in `architecture.md` §3 is implemented:
-room listing, single and recurring bookings, single- and series-level cancellation, and the
-availability-search endpoint. 81 tests passing.
-
-Remaining before this is "done": `test_data/scenarios.py` (the brief's requested test data
-demonstrating highest-risk behavior, as reusable fixtures rather than only inline test
-assertions) and `DECISIONS.md`.
 
 ## Repo layout (current)
 
