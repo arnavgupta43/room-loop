@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app import domain, store
@@ -25,6 +26,11 @@ from app.schemas import (
 from app.time_utils import format_naive_iso
 
 app = FastAPI(title="RoomLoop")
+
+
+@app.exception_handler(RequestValidationError)
+async def _request_validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    return JSONResponse(status_code=400, content={"error": "invalid_request", "message": str(exc)})
 
 
 @app.exception_handler(domain.RoomNotFound)

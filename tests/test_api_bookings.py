@@ -35,6 +35,15 @@ def test_create_booking_end_before_start_returns_400(client):
     assert response.json()["error"] == "invalid_time_range"
 
 
+def test_create_booking_rejects_offset_or_z_suffixed_timestamps(client):
+    response = client.post(
+        "/bookings",
+        json=_booking_payload(start="2026-07-06T09:00:00Z", end="2026-07-06T09:30:00Z"),
+    )
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_request"
+
+
 def test_create_booking_disallowed_duration_returns_400(client):
     response = client.post("/bookings", json=_booking_payload(end="2026-07-06T09:20:00"))
     assert response.status_code == 400
