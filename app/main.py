@@ -3,10 +3,6 @@ FastAPI app instance and route wiring ONLY.
 
 No business logic belongs in this file - every route handler is a thin adapter that parses
 input via schemas.py, calls into domain.py and store.py, and shapes the response via schemas.py.
-
-Implemented so far: GET /rooms, POST /bookings, GET /bookings, GET /bookings/{id},
-DELETE /bookings/{id}. Not yet implemented: POST /bookings/recurring,
-DELETE /bookings/series/{series_id}, GET /availability.
 """
 
 from __future__ import annotations

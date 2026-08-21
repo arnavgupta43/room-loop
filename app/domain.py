@@ -2,10 +2,6 @@
 Pure business logic - no FastAPI, no Pydantic, no I/O. Everything here operates on plain
 Python values (datetimes, dataclasses) so it can be unit-tested directly, before any HTTP layer
 exists.
-
-Implemented so far: Room/Booking records, validate_duration (SS3.1), conflicts (SS3.5/R4), and
-the exception types used across the stack. Recurrence generation, series cancellation cutoffs,
-and availability ranking are not yet implemented.
 """
 
 from __future__ import annotations

@@ -1,11 +1,6 @@
 """
 Pydantic request/response models - the API contract from architecture.md SS3, enforced in code.
 
-Implemented so far: RoomOut, BookingCreate, BookingOut, ErrorResponse - everything needed for
-GET /rooms and single-booking create/read/cancel. RecurringBookingCreate, SkippedInstance,
-RecurringBookingResult, SeriesCancelResult, AvailabilityQuery, AvailableRoomOut are not yet
-implemented (no recurring/series/availability endpoints exist yet).
-
 Timestamp fields are validated as NAIVE datetimes only - any input containing tzinfo/offset/'Z'
 is rejected (G1), via time_utils.parse_naive_iso in a shared before-validator.
 """

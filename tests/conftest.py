@@ -1,9 +1,5 @@
 """
 Shared pytest fixtures.
-
-Implemented so far: fresh_store, client, berlin_room, denver_room.
-Not yet implemented: frozen_now (needed once series cancellation / time_utils.now_in_office
-exist).
 """
 
 import pytest

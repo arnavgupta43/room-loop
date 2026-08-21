@@ -1,12 +1,5 @@
 """
-Naive-local timestamp handling.
-
-Implemented so far: parse_naive_iso / format_naive_iso, used at the schemas.py boundary to
-enforce that every timestamp in this codebase is naive (G1).
-
-Not yet implemented: now_in_office(office) - the per-office "now" helper needed by series
-cancellation's future/past cutoff (SS3.4/SS3.7/G6). It is the only place zoneinfo is meant to be
-used, and stays out of this module until series cancellation is built.
+Naive-local timestamp handling - enforces that every timestamp in this codebase is naive (G1).
 """
 
 from __future__ import annotations

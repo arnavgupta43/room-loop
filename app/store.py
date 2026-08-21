@@ -1,10 +1,6 @@
 """
 In-memory repository - plain Python data structures, no persistence, no logic beyond storage
 and lookup. Business rules (conflicts, duration, recurrence) live in domain.py, not here.
-
-Implemented so far: room seeding/lookup, and basic booking CRUD (add/get/list/cancel).
-Not yet implemented: add_bookings_batch (needed once recurring creation exists) and
-cancel_series_future (needed once series cancellation exists).
 """
 
 from __future__ import annotations
