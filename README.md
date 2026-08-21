@@ -43,7 +43,7 @@ app/
   domain.py          pure business logic — no FastAPI/Pydantic dependency
   store.py           in-memory repository
   rooms_seed.py      fixed room data (from C2) + internal office field
-  time_utils.py      naive-ISO parsing + the one per-office "now" helper
+  time_utils.py      naive-ISO parsing (per-office "now" helper not yet implemented)
 tests/
   conftest.py
   test_domain_*.py   unit tests against domain.py directly, no HTTP
@@ -60,6 +60,22 @@ pytest.ini
 
 Every file above already exists with a docstring explaining its contents (implemented parts say
 so; unbuilt parts describe what's planned) — open any of them to see what's there.
+
+## Endpoints implemented so far
+
+Full planned contract (request/response shapes, error codes) is in
+[`architecture.md`](architecture.md) §3. What's actually live right now:
+
+| Method | Path                  | Notes                                              |
+|--------|-----------------------|-----------------------------------------------------|
+| GET    | `/rooms`               | fixed 4-room list, exact C2 shape                  |
+| POST   | `/bookings`             | single booking; duration + conflict validated      |
+| GET    | `/bookings`             | filter by `room_id`, `user`, `series_id`, `status` |
+| GET    | `/bookings/{id}`        | 404 if unknown                                      |
+| DELETE | `/bookings/{id}`        | cancel, idempotent                                  |
+
+Not yet implemented: `POST /bookings/recurring`, `DELETE /bookings/series/{series_id}`,
+`GET /availability`.
 
 ## Running it
 
