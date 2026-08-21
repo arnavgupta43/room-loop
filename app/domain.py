@@ -112,6 +112,15 @@ def conflicts(a_start: datetime, a_end: datetime, b_start: datetime, b_end: date
     return a_start < b_end and b_start < a_end
 
 
+def find_conflict(
+    candidate_start: datetime, candidate_end: datetime, existing_bookings: list[Booking]
+) -> Optional[Booking]:
+    return next(
+        (b for b in existing_bookings if conflicts(b.start, b.end, candidate_start, candidate_end)),
+        None,
+    )
+
+
 def generate_weekly_instances(
     start: datetime, end: datetime, repeat_until: date
 ) -> list[tuple[datetime, datetime]]:
@@ -150,10 +159,7 @@ def create_recurring_booking(
     skipped: list[SkippedInstance] = []
 
     for instance_start, instance_end in instances:
-        conflicting = next(
-            (b for b in existing_bookings if conflicts(b.start, b.end, instance_start, instance_end)),
-            None,
-        )
+        conflicting = find_conflict(instance_start, instance_end, existing_bookings)
         if conflicting is not None:
             skipped.append(
                 SkippedInstance(
@@ -181,10 +187,8 @@ def create_recurring_booking(
     return series_id, created, skipped
 
 
-def future_cutoff_for_room(room: Room, now: Optional[datetime] = None) -> datetime:
+def future_cutoff_for_room(room: Room) -> datetime:
     """"Now" is the room's own office wall-clock time (G6), never the server's local time."""
-    if now is not None:
-        return now
     return time_utils.now_in_office(room.office)
 
 
@@ -211,7 +215,7 @@ def rank_available_rooms(
         conflict_count = sum(
             1
             for instance_start, instance_end in query_instances
-            if any(conflicts(b.start, b.end, instance_start, instance_end) for b in room_bookings)
+            if find_conflict(instance_start, instance_end, room_bookings) is not None
         )
         results.append(
             AvailableRoom(

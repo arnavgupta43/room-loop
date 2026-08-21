@@ -98,9 +98,10 @@ def create_booking(payload: BookingCreate) -> domain.Booking:
 
     domain.validate_duration(payload.start, payload.end)
 
-    for existing in store.list_bookings(room_id=payload.room_id, status="active"):
-        if domain.conflicts(existing.start, existing.end, payload.start, payload.end):
-            raise domain.BookingConflict(existing.id)
+    existing = store.list_bookings(room_id=payload.room_id, status="active")
+    conflicting = domain.find_conflict(payload.start, payload.end, existing)
+    if conflicting is not None:
+        raise domain.BookingConflict(conflicting.id)
 
     booking = domain.Booking(
         id=0,
