@@ -80,6 +80,23 @@ class SeriesCancelResult(BaseModel):
     left_untouched_count: int
 
 
+class AvailabilityQuery(_NaiveTimestampMixin):
+    start: datetime
+    end: datetime
+    repeat_until: Optional[date] = None
+    capacity: int = 0
+
+
+class AvailableRoomOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    room_id: int
+    name: str
+    capacity: int
+    conflict_count: int
+    total_instances: int
+
+
 class ErrorResponse(BaseModel):
     error: str
     message: str

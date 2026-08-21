@@ -7,15 +7,18 @@ input via schemas.py, calls into domain.py and store.py, and shapes the response
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
 from app import domain, store
 from app.schemas import (
+    AvailabilityQuery,
+    AvailableRoomOut,
     BookingCreate,
     BookingOut,
     RecurringBookingCreate,
@@ -178,3 +181,26 @@ def cancel_series(series_id: str) -> dict:
         "cancelled_count": cancelled_count,
         "left_untouched_count": left_untouched_count,
     }
+
+
+@app.get("/availability", response_model=list[AvailableRoomOut])
+def get_availability(
+    start: str, end: str, repeat_until: Optional[date] = None, capacity: int = 0
+) -> list[domain.AvailableRoom]:
+    try:
+        query = AvailabilityQuery(start=start, end=end, repeat_until=repeat_until, capacity=capacity)
+    except ValidationError as exc:
+        raise RequestValidationError(exc.errors())
+
+    bookings_by_room: dict[int, list[domain.Booking]] = {}
+    for booking in store.list_bookings(status="active"):
+        bookings_by_room.setdefault(booking.room_id, []).append(booking)
+
+    return domain.rank_available_rooms(
+        store.list_rooms(),
+        query.start,
+        query.end,
+        query.capacity,
+        bookings_by_room,
+        repeat_until=query.repeat_until,
+    )

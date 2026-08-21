@@ -95,6 +95,15 @@ class SkippedInstance:
     conflicting_booking_id: int
 
 
+@dataclass
+class AvailableRoom:
+    room_id: int
+    name: str
+    capacity: int
+    conflict_count: int
+    total_instances: int
+
+
 def validate_duration(start: datetime, end: datetime) -> None:
     if end <= start:
         raise InvalidTimeRange("end must be after start")
@@ -187,3 +196,43 @@ def future_cutoff_for_room(room: Room, now: Optional[datetime] = None) -> dateti
     if now is not None:
         return now
     return time_utils.now_in_office(room.office)
+
+
+def rank_available_rooms(
+    candidate_rooms: list[Room],
+    start: datetime,
+    end: datetime,
+    capacity: int,
+    existing_bookings_by_room: dict[int, list[Booking]],
+    repeat_until: Optional[date] = None,
+) -> list[AvailableRoom]:
+    """A dry run of booking creation (SS3.8): same duration validation, same series expansion,
+    same conflict rule - just scored across every candidate room instead of written for one."""
+    validate_duration(start, end)
+    query_instances = (
+        generate_weekly_instances(start, end, repeat_until) if repeat_until is not None else [(start, end)]
+    )
+    total_instances = len(query_instances)
+
+    results: list[AvailableRoom] = []
+    for room in candidate_rooms:
+        if room.capacity < capacity:
+            continue
+        room_bookings = existing_bookings_by_room.get(room.id, [])
+        conflict_count = sum(
+            1
+            for instance_start, instance_end in query_instances
+            if any(conflicts(b.start, b.end, instance_start, instance_end) for b in room_bookings)
+        )
+        results.append(
+            AvailableRoom(
+                room_id=room.id,
+                name=room.name,
+                capacity=room.capacity,
+                conflict_count=conflict_count,
+                total_instances=total_instances,
+            )
+        )
+
+    results.sort(key=lambda r: (r.capacity, r.conflict_count))
+    return results
