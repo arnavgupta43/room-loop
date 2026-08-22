@@ -97,3 +97,28 @@ def test_repeat_until_before_start_returns_400_and_writes_nothing(client):
     assert response.status_code == 400
     assert response.json()["error"] == "invalid_time_range"
     assert client.get("/bookings").json() == []
+
+
+def test_malformed_repeat_until_returns_400_and_writes_nothing(client):
+    response = client.post("/bookings/recurring", json=_recurring_payload(repeat_until="not-a-date"))
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_request"
+    assert client.get("/bookings").json() == []
+
+
+def test_recurring_conflict_skip_reason_names_every_distinct_clashing_booking(client):
+    seed_week1 = client.post(
+        "/bookings",
+        json={"room_id": 3, "start": "2026-07-06T09:00:00", "end": "2026-07-06T09:30:00", "user": "sam"},
+    ).json()
+    seed_week2 = client.post(
+        "/bookings",
+        json={"room_id": 3, "start": "2026-07-13T09:00:00", "end": "2026-07-13T09:30:00", "user": "sam"},
+    ).json()
+
+    response = client.post("/bookings/recurring", json=_recurring_payload())
+    body = response.json()
+    assert len(body["created"]) == 2
+    assert len(body["skipped"]) == 2
+    assert body["skipped"][0]["conflicting_booking_id"] == seed_week1["id"]
+    assert body["skipped"][1]["conflicting_booking_id"] == seed_week2["id"]

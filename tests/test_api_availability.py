@@ -57,6 +57,49 @@ def test_malformed_start_with_offset_returns_400(client):
     assert response.json()["error"] == "invalid_request"
 
 
+def test_disallowed_duration_returns_400(client):
+    response = client.get(
+        "/availability", params={"start": "2026-07-06T09:00:00", "end": "2026-07-06T09:20:00"}
+    )
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_duration"
+
+
+def test_repeat_until_before_start_returns_400(client):
+    response = client.get(
+        "/availability",
+        params={
+            "start": "2026-07-06T09:00:00",
+            "end": "2026-07-06T09:30:00",
+            "repeat_until": "2026-07-01",
+        },
+    )
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_time_range"
+
+
+def test_repeat_until_exceeding_instance_cap_returns_400(client):
+    response = client.get(
+        "/availability",
+        params={
+            "start": "2026-07-06T09:00:00",
+            "end": "2026-07-06T09:30:00",
+            "repeat_until": "2036-01-01",
+        },
+    )
+    assert response.status_code == 400
+    assert response.json()["error"] == "range_too_large"
+
+
+def test_negative_capacity_excludes_every_room(client):
+    response = client.get(
+        "/availability",
+        params={"start": "2026-07-06T09:00:00", "end": "2026-07-06T09:30:00", "capacity": -1},
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 4  # every room's capacity >= -1, none excluded
+
+
 def test_availability_search_has_no_side_effects(client):
     before = client.get("/bookings").json()
     client.get(
