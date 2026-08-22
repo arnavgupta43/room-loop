@@ -99,6 +99,35 @@ def test_repeat_until_before_start_date_rejected():
         generate_weekly_instances(start, end, date(2026, 7, 1))
 
 
+def test_series_spanning_feb_29_in_a_leap_year_counts_and_lands_correctly():
+    # 2028 is a leap year; the series below straddles Feb 29 like any other Tuesday.
+    start = datetime(2028, 2, 8, 9, 0, 0)
+    end = start + timedelta(minutes=30)
+    instances = generate_weekly_instances(start, end, date(2028, 3, 7))
+    assert [instance_start.date() for instance_start, _ in instances] == [
+        date(2028, 2, 8),
+        date(2028, 2, 15),
+        date(2028, 2, 22),
+        date(2028, 2, 29),
+        date(2028, 3, 7),
+    ]
+    _assert_wall_clock_time_preserved(instances, start, end)
+
+
+def test_series_starting_on_feb_29_recurs_normally_into_march():
+    # Starting exactly on the leap day - +7 days each step never needs a "Feb 29 doesn't exist
+    # this year" fallback, unlike monthly/yearly recurrence (explicitly out of scope, spec SS7).
+    start = datetime(2028, 2, 29, 9, 0, 0)
+    end = start + timedelta(minutes=30)
+    instances = generate_weekly_instances(start, end, date(2028, 3, 21))
+    assert [instance_start.date() for instance_start, _ in instances] == [
+        date(2028, 2, 29),
+        date(2028, 3, 7),
+        date(2028, 3, 14),
+        date(2028, 3, 21),
+    ]
+
+
 def test_repeat_until_exceeding_instance_cap_raises_range_too_large():
     start = datetime(2020, 1, 6, 9, 0, 0)
     end = start + timedelta(minutes=30)

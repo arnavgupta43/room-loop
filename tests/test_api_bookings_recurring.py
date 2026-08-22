@@ -106,6 +106,28 @@ def test_malformed_repeat_until_returns_400_and_writes_nothing(client):
     assert client.get("/bookings").json() == []
 
 
+def test_repeat_until_feb_29_in_a_non_leap_year_returns_400_and_writes_nothing(client):
+    # 2027 is not a leap year - Feb 29 isn't a valid calendar date at all, not just an
+    # out-of-range one, so this must fail at request parsing rather than domain validation.
+    response = client.post("/bookings/recurring", json=_recurring_payload(repeat_until="2027-02-29"))
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_request"
+    assert client.get("/bookings").json() == []
+
+
+def test_series_spanning_feb_29_in_a_leap_year_creates_the_leap_day_instance(client):
+    response = client.post(
+        "/bookings/recurring",
+        json=_recurring_payload(
+            start="2028-02-08T09:00:00", end="2028-02-08T09:30:00", repeat_until="2028-03-07"
+        ),
+    )
+    assert response.status_code == 201
+    starts = [b["start"] for b in response.json()["created"]]
+    assert "2028-02-29T09:00:00" in starts
+    assert len(starts) == 5
+
+
 def test_recurring_conflict_skip_reason_names_every_distinct_clashing_booking(client):
     seed_week1 = client.post(
         "/bookings",
