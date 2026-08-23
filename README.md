@@ -4,10 +4,14 @@ Take-home assignment: Junior Software Development Engineer, Round 2. A booking-c
 an internal meeting-room service — create single and recurring bookings, cancel them, with a
 handful of real integration constraints from other teams to respect.
 
+**Approach:** spec-first, then test-driven — the brief was turned into a written spec and
+architecture doc before any code, and tests were written against that contract before the
+implementation that satisfies them.
+
 ## Start here if you're reviewing this
 
 This wasn't coded directly from the brief. Before any implementation, the brief was worked
-through in three stages, in this order — reading them in order is the fastest way to see the
+through in three stages, in this order reading them in order is the fastest way to see the
 reasoning, not just the result:
 
 1. **[`docs/spec.md`](docs/spec.md)** — the brief's requirements restated precisely, plus every
@@ -73,9 +77,14 @@ Full contract (request/response shapes, error codes) is in [`architecture.md`](a
 python -m venv .venv
 .venv/Scripts/activate        # .venv/bin/activate on macOS/Linux
 pip install -r requirements.txt
-pytest                        # 80 tests, all passing
+pytest                        # 102 tests, all passing
 uvicorn app.main:app --reload # run the service locally at http://127.0.0.1:8000
 ```
+
+On Windows, `pip install -r requirements.txt` also pulls in `tzdata` — the standard library's
+`zoneinfo` has no system IANA database to read on Windows, so `time_utils.py`'s `ZoneInfo(...)`
+calls fail without it. macOS/Linux already have a system tz database, so nothing extra is needed
+there.
 
 ## Deliverables checklist (per the brief)
 
